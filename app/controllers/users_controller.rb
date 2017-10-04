@@ -5,9 +5,16 @@ class UsersController < ApplicationController
     head 200
   end
 
+  def destroy
+    user_id = params[:id]
+    @user = User.find(user_id)
+    @user.destroy
+    head 200
+  end
+
   private
     def user_params
-      params.permit(:username, :password, :fullName, :avatarUrl)
+      params.permit(:username, :password, :fullname, :avatarurl)
     end
 
 end
