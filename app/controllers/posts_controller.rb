@@ -9,10 +9,9 @@ class PostsController < ApplicationController
   end
 
   def destroy
-    user_id = params[:user_id]
     post_id = params[:id]
-    @user = User.find(user_id)
-    @user.posts.find(post_id).destroy
+    @post = Post.find(post_id)
+    @post.destroy
     head 200
   end
 
