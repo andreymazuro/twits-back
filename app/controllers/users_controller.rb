@@ -1,15 +1,19 @@
 class UsersController < ApplicationController
 
   def create
-    @user = User.create(user_params)
+    User.create(user_params)
     head 200
   end
 
   def destroy
     user_id = params[:id]
-    @user = User.find(user_id)
-    @user.destroy
-    head 200
+    user = User.find(user_id)
+    if user.present?
+      user.destroy
+      head 200
+    else
+      head 404
+    end
   end
 
   private
