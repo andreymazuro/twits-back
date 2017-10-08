@@ -10,7 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171006111642) do
+ActiveRecord::Schema.define(version: 20171008140407) do
+
+  create_table "microposts", force: :cascade do |t|
+    t.integer  "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_microposts_on_user_id"
+  end
 
   create_table "posts", force: :cascade do |t|
     t.text     "content"
@@ -18,6 +25,14 @@ ActiveRecord::Schema.define(version: 20171006111642) do
     t.datetime "updated_at", null: false
     t.integer  "user_id"
     t.index ["user_id"], name: "index_posts_on_user_id"
+  end
+
+  create_table "retweets", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "post_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_retweets_on_user_id"
   end
 
   create_table "subscribes", force: :cascade do |t|

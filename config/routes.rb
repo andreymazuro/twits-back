@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :retweets
   resources :subscribes
   resources :posts
   resources :users
