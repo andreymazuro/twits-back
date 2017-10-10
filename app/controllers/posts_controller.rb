@@ -28,7 +28,9 @@ class PostsController < ApplicationController
     user = User.find(user_id)
     if user.present?
       feed = user.subscribes.map { |subscribe| User.find(subscribe.sub_id).posts }.flatten
-      render json: feed
+      sorted_feed = organize_post_data(feed.sort_by { |post| post.created_at }.reverse!)
+      feed_with_formatted_time = sorted_feed.each{ |post| post[:created_at] = post[:created_at].strftime("%b %d") }
+      render json: feed_with_formatted_time
     else
       head 404
     end
@@ -47,12 +49,7 @@ class PostsController < ApplicationController
           user: User.find(@post.user_id)
         }
       end
-      posts = user.posts.map{ |post| {
-                                content: post.content,
-                                created_at: post.created_at,
-                                post_id: post.id,
-                                user: User.find(post.user_id)
-                              } }
+      posts = organize_post_data(user.posts)
       sorted_feed = (posts + retweets).sort_by { |post| post[:created_at] }.reverse!
       feed_with_formatted_time = sorted_feed.each { |post| post[:created_at] = post[:created_at].strftime("%b %d") }
       render json: feed_with_formatted_time
@@ -60,5 +57,15 @@ class PostsController < ApplicationController
       head 404
     end
   end
+
+  private
+    def organize_post_data(posts)
+      posts.map{ |post| {
+                   content: post.content,
+                   created_at: post.created_at,
+                   post_id: post.id,
+                   user: User.find(post.user_id)
+                 } }
+    end
 
 end
