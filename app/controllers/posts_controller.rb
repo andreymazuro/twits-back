@@ -1,21 +1,10 @@
 class PostsController < ApplicationController
-
-  def create
-    user_id = params[:user_id]
-    post_content = params[:post_content]
-    user = User.find(user_id)
-    if user.present?
-      user.posts.create(content: post_content)
-      head 200
-    else
-      head 404
-    end
-  end
+  skip_before_action :request_token, :only => [:generate_user_wall]
 
   def destroy
     post_id = params[:id]
-    post = Post.find(post_id)
-    if post.present?
+    post = Post.exists?(id: post_id) && Post.find(post_id)
+    if post.present? && post.user_id == @user.id
       post.destroy
       head 200
     else
@@ -24,10 +13,8 @@ class PostsController < ApplicationController
   end
 
   def generate_feed
-    user_id = params[:id]
-    user = User.find(user_id)
-    if user.present?
-      feed = user.subscribes.map { |subscribe| User.find(subscribe.sub_id).posts }.flatten
+    if @user.present?
+      feed = @user.subscribes.map { |subscribe| User.find(subscribe.sub_id).posts }.flatten
       sorted_feed = organize_post_data(feed.sort_by { |post| post.created_at }.reverse!)
       feed_with_formatted_time = sorted_feed.each{ |post| post[:created_at] = post[:created_at].strftime("%b %d") }
       render json: feed_with_formatted_time

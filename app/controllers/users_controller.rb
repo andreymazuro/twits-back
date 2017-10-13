@@ -1,15 +1,35 @@
 class UsersController < ApplicationController
+  skip_before_action :request_token, :only => [:create, :sign_in]
 
   def create
-    User.create(user_params)
-    head 200
+    user = User.new(
+      username: params[:username],
+      email: params[:email],
+      hashed_password: hash_password(params[:password]),
+      avatarurl: params[:avatarurl],
+      fullname: params[:fullname]
+    )
+    if user.save
+      head 200
+    else
+      render json: user.errors.messages, status: 404
+    end
+  end
+
+  def sign_in
+    user = User.find { |u| u.email == params[:email] }
+    if user && test_password(params[:password], user.hashed_password)
+      token = SecureRandom.hex(10)
+      $redis.set(token, user.id)
+      render json: {token: token}
+    else
+      render json:  {error: 'Email or password was incorrect'}, status: 404
+    end
   end
 
   def destroy
-    user_id = params[:id]
-    user = User.find(user_id)
-    if user.present?
-      user.destroy
+    if @user.present?
+      @user.destroy
       head 200
     else
       head 404
@@ -17,8 +37,13 @@ class UsersController < ApplicationController
   end
 
   private
-    def user_params
-      params.permit(:username, :password, :fullname, :avatarurl)
+
+    def hash_password(password)
+      BCrypt::Password.create(password).to_s
+    end
+
+    def test_password(password, hash)
+      BCrypt::Password.new(hash) == password
     end
 
 end

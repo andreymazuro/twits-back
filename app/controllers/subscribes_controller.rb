@@ -1,11 +1,10 @@
 class SubscribesController < ApplicationController
 
   def create
-    user_id = params[:user_id]
     sub_id = params[:sub_id]
-    user = User.find(user_id)
-    if user.present?
-      user.subscribes.create(sub_id: sub_id)
+    binding.pry
+    if @user.present? && sub_id != @user.id.to_s && User.exists?(id: sub_id)
+      @user.subscribes.create(sub_id: sub_id)
       head 200
     else
       head 404
@@ -13,9 +12,8 @@ class SubscribesController < ApplicationController
   end
 
   def unsubscribe
-    user_id = params[:user_id]
     sub_id = params[:sub_id]
-    subscription =  Subscribe.where(sub_id: sub_id, user_id: user_id).first
+    subscription =  Subscribe.where(sub_id: sub_id, user_id: @user.id).first
     if subscription.present?
       subscription.destroy
       head 200
