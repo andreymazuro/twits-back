@@ -21,7 +21,7 @@ class UsersController < ApplicationController
     if user && test_password(params[:password], user.hashed_password)
       token = SecureRandom.hex(10)
       $redis.set(token, user.id)
-      render json: {token: token}
+      render json: {token: token, user: user}
     else
       render json:  {error: 'Email or password was incorrect'}, status: 404
     end

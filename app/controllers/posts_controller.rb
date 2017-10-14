@@ -4,7 +4,7 @@ class PostsController < ApplicationController
   def destroy
     post_id = params[:id]
     post = Post.exists?(id: post_id) && Post.find(post_id)
-    if post.present? && post.user_id == @user.id
+    if post.user_id == @user.id
       post.destroy
       head 200
     else
