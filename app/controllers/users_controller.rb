@@ -10,11 +10,27 @@ class UsersController < ApplicationController
       fullname: params[:fullname]
     )
 
-    if user.save
+    err = Hash.new
+
+    if User.exists?(username: user.username)
+      old_user = User.where(username: user.username).first
+      if old_user.email_confirmed || checkIfActivationTimeNotExpired(old_user)
+        err[:username_taken] = true
+      end
+    end
+
+    if User.exists?(email: user.email)
+      old_user = User.where(email: user.email).first
+      if old_user.email_confirmed || checkIfActivationTimeNotExpired(old_user)
+        err[:email_taken] = true
+      end
+    end
+
+    if err.empty? && user.save
       ApplicationMailer.send_signup_email(user).deliver
       head 200
     else
-      render json: user.errors.messages, status: 404
+      render json: err, status: 404
     end
   end
 
@@ -51,6 +67,14 @@ class UsersController < ApplicationController
   end
 
   private
+
+    def checkIfActivationTimeNotExpired(user)
+      not_expired = Time.now - user.created_at < 86400
+      if !not_expired
+        user.destroy
+      end
+      not_expired
+    end
 
     def confirmation_token
       if self.confirm_token.blank?
