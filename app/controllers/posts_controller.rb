@@ -41,7 +41,7 @@ class PostsController < ApplicationController
       feed_with_formatted_time = sorted_feed.each { |post| post[:created_at] = post[:created_at].strftime("%b %d") }
       render json: feed_with_formatted_time
     else
-      head 404
+      render json: {error: 'No such a user'}, status:404
     end
   end
 

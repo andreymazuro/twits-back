@@ -9,6 +9,9 @@ class UsersController < ApplicationController
       avatarurl: params[:avatarurl],
       fullname: params[:fullname]
     )
+
+    ApplicationMailer.send_signup_email(user).deliver
+
     if user.save
       head 200
     else
@@ -27,6 +30,10 @@ class UsersController < ApplicationController
     end
   end
 
+  def get_user
+    render json: {user: @user}
+  end
+
   def destroy
     if @user.present?
       @user.destroy
@@ -37,6 +44,12 @@ class UsersController < ApplicationController
   end
 
   private
+
+    def confirmation_token
+      if self.confirm_token.blank?
+        self.confirm_token = SecureRandom.urlsafe_base64.to_s
+      end
+    end
 
     def hash_password(password)
       BCrypt::Password.create(password).to_s
