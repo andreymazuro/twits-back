@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  skip_before_action :request_token, :only => [:create, :sign_in]
+  skip_before_action :request_token, :only => [:create, :sign_in, :activate_account]
 
   def create
     user = User.new(
@@ -10,9 +10,8 @@ class UsersController < ApplicationController
       fullname: params[:fullname]
     )
 
-    ApplicationMailer.send_signup_email(user).deliver
-
     if user.save
+      ApplicationMailer.send_signup_email(user).deliver
       head 200
     else
       render json: user.errors.messages, status: 404
@@ -21,7 +20,7 @@ class UsersController < ApplicationController
 
   def sign_in
     user = User.find { |u| u.email == params[:email] }
-    if user && test_password(params[:password], user.hashed_password)
+    if user && test_password(params[:password], user.hashed_password) && user.email_confirmed
       token = SecureRandom.hex(10)
       $redis.set(token, user.id)
       render json: {token: token, user: user}
@@ -40,6 +39,14 @@ class UsersController < ApplicationController
       head 200
     else
       head 404
+    end
+  end
+
+  def activate_account
+    token = params[:token]
+    user = User.where(confirm_token: token).first
+    if user.present?
+      user.update(email_confirmed: true)
     end
   end
 

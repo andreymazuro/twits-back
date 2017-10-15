@@ -4,8 +4,7 @@
     <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
   </head>
   <body>
-    <h1>Thanks for signing up, <%= @user.email %>!</h1>
-    <p>Thanks for joining and have a great day! Now sign in and do
-awesome things!</p>
+    <h1>Thanks for signing up, click on this link to activate your account http://localhost:3000/activate_account?token=<%= @user.confirm_token %> !</h1>
+    <p>Thanks for joining and have a great day</p>
   </body>
 </html>
