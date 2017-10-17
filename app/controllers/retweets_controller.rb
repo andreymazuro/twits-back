@@ -2,7 +2,7 @@ class RetweetsController < ApplicationController
 
   def create
     post_id = params[:post_id]
-    if @user.present? && Post.exists?(id: post_id)
+    if Post.exists?(id: post_id)
       @user.retweets.create(post_id: post_id)
       head 200
     else
@@ -12,7 +12,7 @@ class RetweetsController < ApplicationController
 
   def destroy
     post_id = params[:id]
-    if @user.present? && Retweet.exists?(user_id: @user.id, post_id: post_id)
+    if Retweet.exists?(user_id: @user.id, post_id: post_id)
       Retweet.where(user_id: @user.id, post_id: post_id).first.destroy
     else
       head 404

@@ -2,7 +2,7 @@ class SubscribesController < ApplicationController
 
   def create
     sub_id = params[:sub_id]
-    if @user.present? && sub_id != @user.id.to_s && User.exists?(id: sub_id)
+    if sub_id != @user.id.to_s && User.exists?(id: sub_id)
       @user.subscribes.create(sub_id: sub_id)
       head 200
     else

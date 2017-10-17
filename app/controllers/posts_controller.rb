@@ -12,15 +12,17 @@ class PostsController < ApplicationController
     end
   end
 
+  def create
+    post_content = params[:post_content]
+    @user.posts.create(content: post_content)
+    head 200
+  end
+
   def generate_feed
-    if @user.present?
-      feed = @user.subscribes.map { |subscribe| User.find(subscribe.sub_id).posts }.flatten
-      sorted_feed = organize_post_data(feed.sort_by { |post| post.created_at }.reverse!)
-      feed_with_formatted_time = sorted_feed.each{ |post| post[:created_at] = post[:created_at].strftime("%b %d") }
-      render json: feed_with_formatted_time
-    else
-      head 404
-    end
+    feed = @user.subscribes.map { |subscribe| User.find(subscribe.sub_id).posts }.flatten + @user.posts
+    sorted_feed = organize_post_data(feed.sort_by { |post| post.created_at }.reverse!)
+    feed_with_formatted_time = sorted_feed.each{ |post| post[:created_at] = post[:created_at].strftime("%b %d") }
+    render json: feed_with_formatted_time
   end
 
   def generate_user_wall

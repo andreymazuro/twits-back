@@ -14,14 +14,14 @@ class UsersController < ApplicationController
 
     if User.exists?(username: user.username)
       old_user = User.where(username: user.username).first
-      if old_user.email_confirmed || checkIfActivationTimeNotExpired(old_user)
+      if old_user.email_confirmed || check_if_activation_time_not_expired(old_user)
         err[:username_taken] = true
       end
     end
 
     if User.exists?(email: user.email)
       old_user = User.where(email: user.email).first
-      if old_user.email_confirmed || checkIfActivationTimeNotExpired(old_user)
+      if old_user.email_confirmed || check_if_activation_time_not_expired(old_user)
         err[:email_taken] = true
       end
     end
@@ -68,7 +68,7 @@ class UsersController < ApplicationController
 
   private
 
-    def checkIfActivationTimeNotExpired(user)
+    def check_if_activation_time_not_expired(user)
       not_expired = Time.now - user.created_at < 86400
       if !not_expired
         user.destroy
