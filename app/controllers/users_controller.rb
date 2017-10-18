@@ -10,39 +10,35 @@ class UsersController < ApplicationController
       fullname: params[:fullname]
     )
 
-    err = Hash.new
-
-    if User.exists?(username: user.username)
-      old_user = User.where(username: user.username).first
-      if old_user.email_confirmed || check_if_activation_time_not_expired(old_user)
-        err[:username_taken] = true
-      end
-    end
-
-    if User.exists?(email: user.email)
-      old_user = User.where(email: user.email).first
-      if old_user.email_confirmed || check_if_activation_time_not_expired(old_user)
-        err[:email_taken] = true
-      end
-    end
-
-    if err.empty? && user.save
+    if params[:password].length > 7 && user.save
       ApplicationMailer.send_signup_email(user).deliver
-      head 200
+      render json: {response: 'success'}, status: 200
     else
-      render json: err, status: 404
+      user.errors.messages[:password] = ['Password is too short. Minimum 8 characters']
+      render json: {error: user.errors.messages} , status: 404
     end
+
   end
 
   def sign_in
     user = User.find { |u| u.email == params[:email] }
+
+    if user.nil?
+      render json: {error: {email: 'Email is not registered'} }, status: 401
+    end
+
+    if user.present? && !test_password(params[:password], user.hashed_password)
+      render json: {error: {password: 'Password was incorrect'} }, status: 401
+    end
+
     if user && test_password(params[:password], user.hashed_password) && user.email_confirmed
       token = SecureRandom.hex(10)
       $redis.set(token, user.id)
-      render json: {token: token, user: user}
-    else
-      render json:  {error: 'Email or password was incorrect'}, status: 404
+      render json: {token: token, user: user}, status: 200
+    elsif user && test_password(params[:password], user.hashed_password) && !user.email_confirmed
+      render json:  {error: {activation: 'Activate your account please, confirmation link was send to email'} }, status: 401
     end
+
   end
 
   def get_user
